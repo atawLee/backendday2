@@ -1,13 +1,9 @@
-using System.Diagnostics;
 using IMS.database.context;
 using IMS.database.entity;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ImsContext>();
@@ -18,11 +14,8 @@ builder.Logging.AddConsole(options =>
 
 var app = builder.Build();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
-
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseRouting(); //미들웨어가 통과하게 하려면 
@@ -31,7 +24,7 @@ app.MapGet("/TestException",()=>{
     throw new Exception("Test Throw Exception");
 });
 
-#region Member CRUD 
+#region Member C/R/U/D 
 
 
 app.MapGet("/member", async (ImsContext context) =>
@@ -80,9 +73,7 @@ app.MapDelete("/member/{id}", async (int id, ImsContext context) =>
 
     return Results.NotFound();
 });
-
 #endregion
-
 
 #region IdolGroup C/R/U/D
 // 모든 IdolGroup 조회
@@ -134,6 +125,36 @@ app.MapDelete("/idolgroup/{id}", async (int id, ImsContext context) =>
     return Results.NoContent();
 });
 
+
+#endregion
+
+#region Link C/R/D
+
+// 모든 IdolGroupLinkMember 조회
+app.MapGet("/idolgrouplinkmember", async (ImsContext context) =>
+    await context.Set<IdolGroupLinkMember>().ToListAsync());
+
+// IdolGroupLinkMember 추가
+app.MapPost("/idolgrouplinkmember", async (IdolGroupLinkMember link, ImsContext context) =>
+{
+    context.Set<IdolGroupLinkMember>().Add(link);
+    await context.SaveChangesAsync();
+    return Results.Created($"/idolgrouplinkmember/{link.IdolGroupId}/{link.MemberId}", link);
+});
+
+// IdolGroupLinkMember 삭제
+app.MapDelete("/idolgrouplinkmember/{idolGroupId}/{memberId}", async (int idolGroupId, int memberId, ImsContext context) =>
+{
+    var link = await context.Set<IdolGroupLinkMember>().FindAsync(idolGroupId, memberId);
+    if (link == null)
+    {
+        return Results.NotFound();
+    }
+
+    context.Set<IdolGroupLinkMember>().Remove(link);
+    await context.SaveChangesAsync();
+    return Results.NoContent();
+});
 
 #endregion
 
