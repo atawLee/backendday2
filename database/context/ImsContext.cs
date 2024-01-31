@@ -34,17 +34,17 @@ public class ImsContext :DbContext
                     .HasMany(ig => ig.Members)
                     .WithMany(m => m.IdolGroups)
                     .UsingEntity<IdolGroupLinkMember>(
-                    j => j
+                    builderLink => builderLink
                     .HasOne<Member>()
                     .WithMany()
                     .HasForeignKey(iglm => iglm.MemberId),
-                    j => j
+                    builderLink => builderLink
                     .HasOne<IdolGroup>()
                     .WithMany()
                     .HasForeignKey(iglm => iglm.IdolGroupId),
-                j =>
+                builderLink =>
                 {
-                    j.HasKey(iglm => new { iglm.IdolGroupId, iglm.MemberId }); // 복합 키 설정
+                    builderLink.HasKey(iglm => new { iglm.IdolGroupId, iglm.MemberId }); // 복합 키 설정
                 });
     }
 }

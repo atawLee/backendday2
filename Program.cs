@@ -162,7 +162,31 @@ app.MapDelete("/idolgrouplinkmember/{idolGroupId}/{memberId}", async (int idolGr
     return Results.NoContent();
 });
 
+
+
+
+
 #endregion
 
+
+app.MapGet("/groupMembers", async (int groupId, ImsContext context) =>
+{
+    var groupWithMembers = await context.IdolGroup
+        .Where(g => g.IdolGroupId == groupId)
+        .Include(g => g.Members)
+        .Select(group => new IdolGroupDto
+        {
+            IdolGroupId = group.IdolGroupId,
+            GroupName = group.GroupName,
+            Members = group.Members.Select(member => new MemberDto
+            {
+                MemberId = member.MemberId,
+                MemberName = member.MemberName
+            }).ToList()
+        })
+        .FirstOrDefaultAsync();
+
+    return groupWithMembers;
+});
 
 app.Run();
